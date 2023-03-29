@@ -1,9 +1,12 @@
+import dotenv from 'dotenv'
 import fetch from 'node-fetch'
 import assert from "assert"
 import * as fs from "fs"
 import * as path from "path"
 
-const url = 'http://localhost:3000'
+dotenv.config()
+
+const url = `http://localhost:${process.env.PORT}`
 const inputdir = './input/'
 const outputdir = './output/'
 
@@ -79,13 +82,15 @@ async function pause(period) {
 
 // проверяет передачу файла на сервер и сохранение в папке outputdir
 async function testPostFile(inputdir, filename, outputdir) {
+    var stats = fs.statSync(inputdir+filename)
+    const filesize = stats.size;
     const base64 = getBase64FileContent(inputdir, filename)
-    //console.log(base64)
 
     const body = {
         "filename": filename,
         "outputdir": outputdir,
-        "base64": base64
+        "base64": base64,
+        "filesize": filesize
     }
     const response = await fetch(`${url}/filename`, {
         method: 'post',

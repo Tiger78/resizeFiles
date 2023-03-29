@@ -1,11 +1,16 @@
+import dotenv from 'dotenv'
 import express from 'express'
 import bodyParser from 'body-parser'
 import * as fs from "fs"
 import sharp from 'sharp'
 
+dotenv.config()
+
 const app = express()
 
-const PORT = 3000
+const PORT = process.env.PORT
+
+const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE
 
 const sizes = {
     large: [2048, 2048],
@@ -14,10 +19,10 @@ const sizes = {
 }
 
 const image_extentions = [
-    'jpg'
+    'jpg','png','gif'
 ]
 
-const outputdir = './output/'
+const OUTPUTDIR = './output/'
 
 app.use(bodyParser.json({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 
@@ -47,8 +52,13 @@ app.post('/filename', (req, res) => {
     const body = req.body
     //console.log(body)
     const filename = body.filename
-    const outputdir = body.outputdir
+    const outputdir = body.outputdir || OUTPUTDIR
     const base64 = body.base64
+    const filesize = body.filesize
+    if (filesize > MAX_FILE_SIZE){
+        res.send({"error": "file is too big"})
+        return
+    }
     const b = Buffer.from(base64, 'base64')
     //fs.writeFileSync(outputdir+filename, b)
 
